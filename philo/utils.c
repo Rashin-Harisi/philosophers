@@ -37,3 +37,17 @@ int	ft_atoi(char *str)
 	}
 	return (sign * result);
 }
+
+long get_times_in_ms(void)
+{
+	/**
+	 struct timeval
+	{
+		long tv_sec;   // seconds
+		long tv_usec;  // micro seconds
+	};
+	 */
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+}

@@ -1,7 +1,10 @@
 NAME 			:= philo
 HEADER			:= philo.h 
 
-COMMON_SRC		:= utils.c 
+COMMON_SRC		:= utils.c \
+				initials.c \
+				mutexes.c
+				
 MANDATORY_SRC	:= philo.c 
 
 COMMON_OBJ		:= $(COMMON_SRC:.c=.o)

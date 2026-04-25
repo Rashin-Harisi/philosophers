@@ -1,53 +1,15 @@
 # include "philo.h"
 
-int first_initial(char **argv, t_info *info)
-{
-    info->num = ft_atoi(argv[1]);
-    info->philos = malloc((info->num) * sizeof(pthread_t));
-    if(!info->philos) return 0;
-    info->time_to_die = ft_atoi(argv[2]);
-    info->time_to_eat = ft_atoi(argv[3]);
-    info->time_to_sleep = ft_atoi(argv[4]);
-    if(argv[5])
-    {
-        info->flag_must_eat = 1;
-        info->times_must_eat = ft_atoi(argv[5]);
-    }
-    else 
-    {
-        info->flag_must_eat = 0;
-        info->times_must_eat = 0;
-    }
-    return 1;
-}
-
 void *sleep_func(void *arg){
-    (void)arg;
-    printf("sleep\n");
+    t_philo *philo = (t_philo *)arg;
+    printf("philo %d is sleeping\n", philo->id);
     return NULL;
 }
 
-int create_threads(t_info *info)
+int cleanup(t_info *info)
 {
-    int i = 0;
-    while (i < info->num)
-    {
-        if(pthread_create(&info->philos[i], NULL, &sleep_func, NULL) != 0)
-            return 0;
-        i++;
-    }
-    return 1;
-}
-
-int join_threads(t_info *info)
-{
-    int i = 0;
-    while (i < info->num)
-    {
-        if(pthread_join(info->philos[i], NULL) != 0)
-            return 0;
-        i++;
-    }
+    free(info->philos);
+    free(info->forks);
     return 1;
 }
 
@@ -55,10 +17,18 @@ int main(int argc, char **argv)
 {
     if (argc != 5 && argc !=6 )  return 1;
     t_info info;
+    long now = get_times_in_ms();
+    printf(" time : %ld\n", now);
     if(!first_initial(argv, &info)) return 1;
-    if (!create_threads(&info)) return (free(info.philos), 1);
-
-    if(!join_threads(&info)) return (free(info.philos), 1);
+    if(!init_mutexes(&info))
+        return (cleanup(&info));
+    if(!init_philo(&info))
+        return (cleanup(&info));
+    if(!join_threads(&info))
+        return (cleanup(&info));
+    if (!destroy_mutexes(&info))
+        return (cleanup(&info));
     free(info.philos);
+    free(info.forks);
     return 0;
 }
