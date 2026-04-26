@@ -1,9 +1,48 @@
 # include "philo.h"
 
-void *sleep_func(void *arg){
-    t_philo *philo = (t_philo *)arg;
-    printf("philo %d is sleeping\n", philo->id);
-    return NULL;
+int all_eat_enough(t_info *info)
+{
+    int count = 0;
+    int i = 0;
+
+    while( i < info->num)
+    {
+        if (get_nums_meal(&info->philos[i]) >= info->times_must_eat)
+            count++;
+        i++;
+    }
+    if (count == info->num) return 1;
+    else return 0;
+}
+
+
+void monitor(t_info *info)
+{
+    int i;
+    while (1)
+    {
+        i = 0;
+        while ( i < info->num)
+        {
+            if( get_times_in_ms() - get_last_meal_time(&info->philos[i]) > info->time_to_die)
+            {
+                print(&info->philos[i], "died");
+                pthread_mutex_lock(&info->stop_flag);
+                info->stop = 1;
+                pthread_mutex_unlock(&info->stop_flag);
+                return;
+            }
+            i++;
+        }
+        if (info->flag_must_eat && all_eat_enough(info))
+        {
+            pthread_mutex_lock(&info->stop_flag);
+            info->stop = 1;
+            pthread_mutex_unlock(&info->stop_flag);
+            return;
+        }
+        usleep(1000);        
+    }
 }
 
 int cleanup(t_info *info)
@@ -24,10 +63,15 @@ int main(int argc, char **argv)
         return (cleanup(&info));
     if(!init_philo(&info))
         return (cleanup(&info));
+    monitor(&info);
     if(!join_threads(&info))
         return (cleanup(&info));
     if (!destroy_mutexes(&info))
         return (cleanup(&info));
+    if(pthread_mutex_destroy(&info.print) != 0)
+        retrun (cleanup(&info));
+    if(pthread_mutex_destroy(&info.stop_flag) != 0)
+        retrun (cleanup(&info));
     free(info.philos);
     free(info.forks);
     return 0;

@@ -3,7 +3,8 @@ HEADER			:= philo.h
 
 COMMON_SRC		:= utils.c \
 				initials.c \
-				mutexes.c
+				mutexes.c \
+				routine.c 
 				
 MANDATORY_SRC	:= philo.c 
 
