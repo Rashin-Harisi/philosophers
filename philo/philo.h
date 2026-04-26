@@ -43,6 +43,7 @@ typedef struct  s_info
 } t_info;
 
 int	ft_atoi(char *str);
+int	ft_strcmp(const char *s1, const char *s2);
 int first_initial(char **argv, t_info *info);
 int create_threads(t_info *info, int index);
 int join_threads(t_info *info);
@@ -56,5 +57,8 @@ void print(t_philo *philo, char *text);
 void eat(t_philo *philo);
 long get_last_meal_time(t_philo *philo);
 int get_nums_meal(t_philo *philo);
+int get_stop_flag(t_info *info);
+//void sleep_philo(t_philo *philo);
+//void think(t_philo *philo);
 
 #endif

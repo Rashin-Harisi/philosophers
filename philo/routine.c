@@ -3,9 +3,13 @@
 
 void print(t_philo *philo, char *text)
 {
-    long now = get_times_in_ms();
+    long now;
     pthread_mutex_lock(&philo->info->print);
-    printf("%ld %d %s\n", (now - philo->info->start_time), philo->id, text);
+    if(!get_stop_flag(philo->info) || ft_strcmp(text, "died") == 0)
+    {
+        now = get_times_in_ms();
+        printf("%ld %d %s\n", (now - philo->info->start_time), philo->id, text);
+    }
     pthread_mutex_unlock(&philo->info->print);
 }
 
@@ -28,13 +32,13 @@ void eat(t_philo *philo)
     pthread_mutex_unlock(philo->right_fork);
 
 }
-
-void sleep(t_philo *philo)
+/*
+void sleep_philo(t_philo *philo)
 {}
 
 void think(t_philo *philo)
 {}
-
+*/
 void *routine(void *arg)
 {
     t_philo *philo = (t_philo *)arg;
@@ -42,8 +46,8 @@ void *routine(void *arg)
     while (!philo->info->stop)
     {
         eat(philo);
-        sleep(philo);
-        think(philo);
+        //sleep_philo(philo);
+        //think(philo);
     }
     return NULL;
 }

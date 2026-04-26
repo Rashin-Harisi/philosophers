@@ -45,3 +45,13 @@ int get_nums_meal(t_philo *philo)
     pthread_mutex_unlock(&philo->meals);
     return (nums);
 }
+
+int get_stop_flag(t_info *info)
+{
+    int flag;
+
+    pthread_mutex_lock(&info->stop_flag);
+    flag = info->stop;
+    pthread_mutex_unlock(&info->stop_flag);
+    return (flag);
+}

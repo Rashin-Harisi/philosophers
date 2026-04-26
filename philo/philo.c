@@ -26,10 +26,10 @@ void monitor(t_info *info)
         {
             if( get_times_in_ms() - get_last_meal_time(&info->philos[i]) > info->time_to_die)
             {
-                print(&info->philos[i], "died");
                 pthread_mutex_lock(&info->stop_flag);
                 info->stop = 1;
                 pthread_mutex_unlock(&info->stop_flag);
+                print(&info->philos[i], "died");
                 return;
             }
             i++;
@@ -56,8 +56,8 @@ int main(int argc, char **argv)
 {
     if (argc != 5 && argc !=6 )  return 1;
     t_info info;
-    long now = get_times_in_ms();
-    printf(" time : %ld\n", now);
+    //long now = get_times_in_ms();
+    //printf(" time : %ld\n", now);
     if(!first_initial(argv, &info)) return 1;
     if(!init_mutexes(&info))
         return (cleanup(&info));
@@ -69,9 +69,9 @@ int main(int argc, char **argv)
     if (!destroy_mutexes(&info))
         return (cleanup(&info));
     if(pthread_mutex_destroy(&info.print) != 0)
-        retrun (cleanup(&info));
+        return (cleanup(&info));
     if(pthread_mutex_destroy(&info.stop_flag) != 0)
-        retrun (cleanup(&info));
+        return (cleanup(&info));
     free(info.philos);
     free(info.forks);
     return 0;
