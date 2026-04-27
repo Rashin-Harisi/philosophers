@@ -17,11 +17,11 @@ static int	check_handler(const char *str, int *i, int *sign)
 	return (*sign);
 }
 
-int	ft_atoi(char *str)
+long	ft_atoi(char *str)
 {
 	int	i;
 	int	sign;
-	int	result;
+	long	result;
 
 	result = 0;
 	i = 0;
@@ -61,4 +61,36 @@ int	ft_strcmp(const char *s1, const char *s2)
 		&& (s1[index] == s2[index]))
 		index++;
 	return ((unsigned char)s1[index] - (unsigned char)s2[index]);
+}
+
+int is_digit(char *str)
+{
+	int i = 0;
+	while (str[i] != '\0')
+	{
+		if (str[i] >= '0' && str[i] <= '9') i++;
+		else return 0;
+	}
+	return 1;
+}
+
+int validation_args(int argc, char **argv)
+{
+	int i = 1;
+	long n;
+	while (i < argc)
+	{
+		if(!is_digit(argv[i])) return 0;
+		n = ft_atoi(argv[i]);
+		if (i == 1)
+		{
+			if(n<= 0 || n > 200) return 0;
+		}
+		else
+		{
+			if(n<= 0 || n > 2147483647) return 0;
+		}
+		i++;
+	}
+	return 1;
 }

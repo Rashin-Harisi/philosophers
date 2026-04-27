@@ -44,19 +44,23 @@ int init_philo(t_info *info)
         info->philos[i].info = info;
         if (pthread_mutex_init(&info->philos[i].meals, NULL) !=0) return 0;
         if (pthread_mutex_init(&info->philos[i].last_time, NULL) !=0) return 0;
-        if(!create_threads(info, i)) return 0;
         i++;
     }
     return 1;
 }
 
-int create_threads(t_info *info, int index)
+int create_threads(t_info *info)
 {
     // pthread_create(thread, attr, routin, arg)
     //arg for each philos[i] is equal to the info->philos[i]
     //without the arg, forks are not available and we miss the related thread to each philo
-    if(pthread_create(&info->philos[index].thread, NULL, &routine, &info->philos[index]) != 0)
-        return 0;
+    int index = 0;
+    while (index < info->num)
+    {
+        if(pthread_create(&info->philos[index].thread, NULL, &routine, &info->philos[index]) != 0)
+            return 0;
+        index++;
+    }
     return 1;
 }
 

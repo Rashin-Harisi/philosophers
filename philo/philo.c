@@ -54,14 +54,14 @@ int cleanup(t_info *info)
 
 int main(int argc, char **argv)
 {
-    if (argc != 5 && argc !=6 )  return 1;
+    if ((argc != 5 && argc !=6 ) || !validation_args(argc, argv))  return 1;
     t_info info;
-    //long now = get_times_in_ms();
-    //printf(" time : %ld\n", now);
     if(!first_initial(argv, &info)) return 1;
     if(!init_mutexes(&info))
         return (cleanup(&info));
     if(!init_philo(&info))
+        return (cleanup(&info));
+    if (!create_threads(&info))
         return (cleanup(&info));
     monitor(&info);
     if(!join_threads(&info))

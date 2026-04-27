@@ -14,16 +14,27 @@ void print(t_philo *philo, char *text)
 }
 
 
+
 void eat(t_philo *philo)
 {
-    pthread_mutex_lock(philo->left_fork);
-    print(philo, "has taken a fork.");
-    pthread_mutex_lock(philo->right_fork);
-    print(philo, "has taken a fork.");
-    print(philo, "is eating.");
+    if (philo->id == philo->info->num)
+    {
+        pthread_mutex_lock(philo->right_fork);
+        print(philo, "has taken a fork.");
+        pthread_mutex_lock(philo->left_fork);
+        print(philo, "has taken a fork.");
+    }
+    else 
+    {
+        pthread_mutex_lock(philo->left_fork);
+        print(philo, "has taken a fork.");
+        pthread_mutex_lock(philo->right_fork);
+        print(philo, "has taken a fork.");
+    }
     pthread_mutex_lock(&philo->last_time);
     philo->last_meal_time = get_times_in_ms();
     pthread_mutex_unlock(&philo->last_time);
+    print(philo, "is eating.");
     pthread_mutex_lock(&philo->meals);
     philo->num_meals++;
     pthread_mutex_unlock(&philo->meals);
@@ -32,22 +43,37 @@ void eat(t_philo *philo)
     pthread_mutex_unlock(philo->right_fork);
 
 }
-/*
+
 void sleep_philo(t_philo *philo)
-{}
+{
+    print(philo, "is sleeping");
+    usleep(philo->info->time_to_sleep * 1000);
+}
 
 void think(t_philo *philo)
-{}
-*/
+{
+    print(philo, "is thinking");
+}
+
 void *routine(void *arg)
 {
     t_philo *philo = (t_philo *)arg;
 
-    while (!philo->info->stop)
+    if(philo->info->num == 1)
+    {
+        pthread_mutex_lock(philo->left_fork);
+        print(philo, "has taken a fork.");
+        if(!get_stop_flag(philo->info))
+            usleep(1000);
+        pthread_mutex_unlock(philo->left_fork);
+        return NULL;
+    }
+
+    while (!get_stop_flag(philo->info))
     {
         eat(philo);
-        //sleep_philo(philo);
-        //think(philo);
+        sleep_philo(philo);
+        think(philo);
     }
     return NULL;
 }
