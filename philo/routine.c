@@ -20,25 +20,25 @@ void eat(t_philo *philo)
     if (philo->id == philo->info->num)
     {
         pthread_mutex_lock(philo->right_fork);
-        print(philo, "has taken a fork.");
+        print(philo, "has taken a fork");
         pthread_mutex_lock(philo->left_fork);
-        print(philo, "has taken a fork.");
+        print(philo, "has taken a fork");
     }
     else 
     {
         pthread_mutex_lock(philo->left_fork);
-        print(philo, "has taken a fork.");
+        print(philo, "has taken a fork");
         pthread_mutex_lock(philo->right_fork);
-        print(philo, "has taken a fork.");
+        print(philo, "has taken a fork");
     }
     pthread_mutex_lock(&philo->last_time);
     philo->last_meal_time = get_times_in_ms();
     pthread_mutex_unlock(&philo->last_time);
-    print(philo, "is eating.");
+    print(philo, "is eating");
+    usleep(philo->info->time_to_eat * 1000);
     pthread_mutex_lock(&philo->meals);
     philo->num_meals++;
     pthread_mutex_unlock(&philo->meals);
-    usleep(philo->info->time_to_eat * 1000);
     pthread_mutex_unlock(philo->left_fork);
     pthread_mutex_unlock(philo->right_fork);
 
@@ -53,6 +53,9 @@ void sleep_philo(t_philo *philo)
 void think(t_philo *philo)
 {
     print(philo, "is thinking");
+    if (philo->info->num % 2 != 0)
+       usleep((philo->info->time_to_eat / 2) * 1000); 
+    // time of thinking + sleeping + eating < time_to_die
 }
 
 void *routine(void *arg)
@@ -62,13 +65,14 @@ void *routine(void *arg)
     if(philo->info->num == 1)
     {
         pthread_mutex_lock(philo->left_fork);
-        print(philo, "has taken a fork.");
+        print(philo, "has taken a fork");
         if(!get_stop_flag(philo->info))
             usleep(1000);
         pthread_mutex_unlock(philo->left_fork);
         return NULL;
     }
-
+    if (philo->id % 2 == 0)
+        usleep(1000);
     while (!get_stop_flag(philo->info))
     {
         eat(philo);
