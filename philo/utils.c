@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   utils.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: rabdolho <rabdolho@student.42vienna.c      +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/04/29 15:32:24 by rabdolho          #+#    #+#             */
+/*   Updated: 2026/04/29 15:37:29 by rabdolho         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 #include "philo.h"
 
 static int	check_handler(const char *str, int *i, int *sign)
@@ -19,8 +30,8 @@ static int	check_handler(const char *str, int *i, int *sign)
 
 long	ft_atoi(char *str)
 {
-	int	i;
-	int	sign;
+	int		i;
+	int		sign;
 	long	result;
 
 	result = 0;
@@ -38,16 +49,10 @@ long	ft_atoi(char *str)
 	return (sign * result);
 }
 
-long get_times_in_ms(void)
+long	get_times_in_ms(void)
 {
-	/**
-	 struct timeval
-	{
-		long tv_sec;   // seconds
-		long tv_usec;  // micro seconds
-	};
-	 */
-	struct timeval tv;
+	struct timeval	tv;
+
 	gettimeofday(&tv, NULL);
 	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
 }
@@ -63,34 +68,17 @@ int	ft_strcmp(const char *s1, const char *s2)
 	return ((unsigned char)s1[index] - (unsigned char)s2[index]);
 }
 
-int is_digit(char *str)
+int	is_digit(char *str)
 {
-	int i = 0;
+	int	i;
+
+	i = 0;
 	while (str[i] != '\0')
 	{
-		if (str[i] >= '0' && str[i] <= '9') i++;
-		else return 0;
-	}
-	return 1;
-}
-
-int validation_args(int argc, char **argv)
-{
-	int i = 1;
-	long n;
-	while (i < argc)
-	{
-		if(!is_digit(argv[i])) return 0;
-		n = ft_atoi(argv[i]);
-		if (i == 1)
-		{
-			if(n<= 0 || n > 200) return 0;
-		}
+		if (str[i] >= '0' && str[i] <= '9')
+			i++;
 		else
-		{
-			if(n<= 0 || n > 2147483647) return 0;
-		}
-		i++;
+			return (0);
 	}
-	return 1;
+	return (1);
 }
