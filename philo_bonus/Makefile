@@ -1,9 +1,10 @@
-NAME 			:= philo
+NAME 			:= philo_bonus
 HEADER			:= philo.h 
 
 COMMON_SRC		:= utils.c \
 				initials.c \
-				mutexes.c \
+				ft_itoa.c \
+				ft_strjoin.c \
 				routine.c \
 				validation.c
 				

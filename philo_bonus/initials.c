@@ -19,6 +19,8 @@ int	clean_func(t_info *info)
 		sem_close(info->print);
 	if (info->stop_flag && info->stop_flag != SEM_FAILED)
 		sem_close(info->stop_flag);
+	if (info->taken_forks && info->taken_forks != SEM_FAILED)
+		sem_close(info->taken_forks);
 	sem_unlink("/print");
 	sem_unlink("/stop");
 	sem_unlink("/forks");
@@ -53,6 +55,8 @@ int	first_initial(char **argv, t_info *info)
 		info->times_must_eat = 0;
 	}
 	info->start_time = get_times_in_ms();
+	sem_unlink("/taken_forks");
+	info->taken_forks - sem_open("/taken_forks", O_CREAT, 0644, 1);
 	sem_unlink("/print");
 	info->print = sem_open("/print", O_CREAT, 0644, 1);
 	sem_unlink("/stop");
@@ -61,14 +65,16 @@ int	first_initial(char **argv, t_info *info)
 	info->forks = sem_open("/forks", O_CREAT, 0644, info->num);
 	if (info->forks == SEM_FAILED
 		|| info->print == SEM_FAILED
-		|| info->stop_flag == SEM_FAILED)
+		|| info->stop_flag == SEM_FAILED
+		|| info->taken_forks == SEM_FAILED)
 		return (clean_func(info));
 	return (1);
 }
 
 int	init_philo(t_info *info)
 {
-	int	i;
+	int		i;
+	char	*name;
 
 	i = 0;
 	while (i < info->num)
@@ -77,6 +83,29 @@ int	init_philo(t_info *info)
 		info->philos[i].last_meal_time = info->start_time;
 		info->philos[i].num_meals = 0;
 		info->philos[i].info = info;
+		name = create_name(&info->philos[i] , "/last_meal");
+		if (!name)
+			return (0);
+		sem_unlink(name);
+		info->philos[i].last_meal = sem_open(name, O_CREAT, 0644, 1);
+		if (info->philos[i].last_meal == SEM_FAILED)
+		{
+			free(name);
+			return (0);
+		}
+		free(name);
+		name = create_name(&info->philos[i], "/meals");
+		if (!name)
+			return (0);
+		sem_unlink(name);
+		info->philos[i].meals= sem_open(name, O_CREAT, 0644, 1);
+		if (info->philos[i].meals == SEM_FAILED)
+		{
+			free(name);
+			sem_close(info->philos[i].last_meal);
+			return (0);
+		}
+		free(name);
 		i++;
 	}
 	return (1);

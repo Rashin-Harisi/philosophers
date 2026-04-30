@@ -32,6 +32,8 @@ typedef struct s_philo
 	int				id;
 	long			last_meal_time;
 	int				num_meals;
+	sem_t			*last_meal;
+	sem_t			*meals;
 	pthread_t		monitor;
 	t_info			*info;
 }	t_philo;
@@ -44,6 +46,7 @@ typedef struct s_info
 	sem_t			*forks;
 	sem_t			*print;
 	sem_t			*stop_flag;
+	sem_t			*taken_forks;
 	long			time_to_die;
 	long			time_to_eat;
 	long			time_to_sleep;
@@ -54,11 +57,18 @@ typedef struct s_info
 
 long	ft_atoi(char *str);
 int		is_digit(char *str);
+char	*ft_itoa(int n);
 int		ft_strcmp(const char *s1, const char *s2);
+char	*ft_strjoin(char const *s1, char const *s2);
+char	*create_name(t_philo *philo, char *main);
 int		first_initial(char **argv, t_info *info);
 int		create_processes(t_info *info);
 void	kill_childs(t_info *info, int index);
 void	waitpid_childs(t_info *info, int index);
 void	*monitor(void *arg);
+void	print(t_philo *philo, char *text);
+int		get_nums_meal(t_philo *philo);
+long	get_last_meal_time(t_philo *philo);
+long	get_times_in_ms(void);
 
 #endif

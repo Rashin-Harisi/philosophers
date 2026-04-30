@@ -11,23 +11,24 @@
 /* ************************************************************************** */
 #include "philo.h"
 
-void	print(t_philo *philo, char *text)
-{
-	long	now;
-
-	sem_wait(philo->info->print);
-	if (!get_stop_flag(philo->info) || ft_strcmp(text, "died") == 0)
-	{
-		now = get_times_in_ms();
-		printf ("%ld %d %s\n", (now - philo->info->start_time),
-			philo->id, text);
-	}
-	sem_post(philo->info->print);
-}
-
 void	eat(t_philo *philo)
 {
-
+	sem_wait(philo->info->taken_forks);
+	sem_wait(philo->info->forks);
+	print(philo, "has taken a fork");
+	sem_wait(philo->info->forks);
+	print(philo, "has taken a fork");
+	sem_post(philo->info->taken_forks);
+	sem_wait(philo->last_meal);
+	philo->last_meal_time = get_times_in_ms();
+	sem_post(philo->last_meal);
+	print(philo, "is eating");
+	usleep(philo->info->time_to_eat * 1000);
+	sem_wait(philo->meals);
+	philo->num_meals++;
+	sem_post(philo->meals);
+	sem_post(philo->info->forks);
+	sem_post(philo->info->forks);
 }
 
 void	sleep_philo(t_philo *philo)
@@ -43,27 +44,23 @@ void	think(t_philo *philo)
 		usleep((philo->info->time_to_eat / 2) * 1000);
 }
 
-void	*routine(void *arg)
+void	routine(t_philo *philo)
 {
-	t_philo	*philo;
-
-	philo = (t_philo *)arg;
 	if (philo->info->num == 1)
 	{
 		sem_wait(philo->info->forks);
 		print(philo, "has taken a fork");
-		if (!get_stop_flag(philo->info))
+		while (1)
 			usleep(1000);
 		sem_post(philo->info->forks);
-		return (NULL);
+		return ;
 	}
 	if (philo->id % 2 == 0)
 		usleep(1000);
-	while (!get_stop_flag(philo->info))
+	while (1)
 	{
 		eat(philo);
 		sleep_philo(philo);
 		think(philo);
 	}
-	return (NULL);
 }

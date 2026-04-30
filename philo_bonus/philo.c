@@ -11,29 +11,59 @@
 /* ************************************************************************** */
 #include "philo.h"
 
+void	print(t_philo *philo, char *text)
+{
+	long	now;
+
+	sem_wait(philo->info->print);
+	if (!get_stop_flag(philo->info) || ft_strcmp(text, "died") == 0)
+	{
+		now = get_times_in_ms();
+		printf ("%ld %d %s\n", (now - philo->info->start_time),
+			philo->id, text);
+	}
+	sem_post(philo->info->print);
+}
+
+int	get_nums_meal(t_philo *philo)
+{
+	int	num;
+
+	sem_wait(philo->meals);
+	num = philo->num_meals;
+	sem_post(philo->meals);
+	return (num);
+}
+
+long	get_last_meal_time(t_philo *philo)
+{
+	long time;
+
+	sem_wait(philo->last_meal);
+	time = philo->last_meal_time;
+	sem_post(philo->last_meal);
+	return (time);
+}
+
 void	*monitor(void *arg)
 {
-	int		i;
 	t_philo	*philo;
 
 	philo = (t_philo *)arg;
 	while (1)
 	{
-		i = 0;
-		while (i < philo->info->num)
+		
+		if (get_times_in_ms() - get_last_meal_time(philo)
+			> philo->info->time_to_die)
 		{
-			if (get_times_in_ms() - philo->last_meal_time
-				> philo->info->time_to_die)
-			{
-				print(&philo->info->philos[i], "died");
-				exit(1);
-			}
-			i++;
-		}
-		if (philo->info->flag_must_eat && all_eat_enough(philo->info))
+			print(philo , "died");
 			exit(1);
+		}
+		if (philo->info->flag_must_eat && get_nums_meal(philo) >= philo->info->times_must_eat)
+			exit(0);
 		usleep(1000);
 	}
+	return (NULL);
 }
 
 

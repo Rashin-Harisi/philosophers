@@ -82,3 +82,24 @@ int	is_digit(char *str)
 	}
 	return (1);
 }
+
+char	*create_name(t_philo *philo, char *main)
+{
+	char	*num;
+	char	*tmp;
+	char	*name;
+
+	num = ft_itoa(philo->id);
+	if (!num)
+		return (NULL);
+	tmp = ft_strjoin(main, '-');
+	if (!tmp)
+	{
+		free(num);
+		return (NULL);
+	}
+	name = ft_strjoin(tmp, num);
+	free(tmp);
+	free(num);
+	return (name);	
+}
