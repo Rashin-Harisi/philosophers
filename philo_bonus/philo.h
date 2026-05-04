@@ -47,6 +47,7 @@ typedef struct s_info
 	sem_t			*print;
 	sem_t			*stop_flag;
 	sem_t			*taken_forks;
+	sem_t			*all_ate;
 	long			time_to_die;
 	long			time_to_eat;
 	long			time_to_sleep;
@@ -78,6 +79,6 @@ void	eat(t_philo *philo);
 void	sleep_philo(t_philo *philo);
 void	think(t_philo *philo);
 void	routine(t_philo *philo);
-int	validation_args(int argc, char **argv);
-
+int		validation_args(int argc, char **argv);
+void	*all_ate_watcher(void *arg);
 #endif

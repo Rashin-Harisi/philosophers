@@ -52,8 +52,6 @@ void	routine(t_philo *philo)
 		print(philo, "has taken a fork");
 		while (1)
 			usleep(1000);
-		sem_post(philo->info->forks);
-		return ;
 	}
 	if (philo->id % 2 == 0)
 		usleep(1000);

@@ -17,7 +17,14 @@ void	print(t_philo *philo, char *text)
 
 	sem_wait(philo->info->print);
 	now = get_times_in_ms();
-	printf ("%ld %d %s\n", (now - philo->info->start_time),
+	if (ft_strcmp(text, "died") == 0)
+	{
+		printf ("%ld %d died\n", (now - philo->info->start_time),
+			philo->id, text);
+		exit(1);
+	}
+	else
+		printf ("%ld %d %s\n", (now - philo->info->start_time),
 			philo->id, text);
 	sem_post(philo->info->print);
 }
@@ -57,11 +64,15 @@ void	*monitor(void *arg)
 			exit(1);
 		}
 		if (philo->info->flag_must_eat && get_nums_meal(philo) >= philo->info->times_must_eat)
+		{
+			sem_post(philo->info->all_ate);	
 			exit(0);
+		}
 		usleep(1000);
 	}
 	return (NULL);
 }
+
 
 void	cleanup(t_info *info)
 {
@@ -97,28 +108,65 @@ void	cleanup(t_info *info)
 		sem_close(info->stop_flag);
 	if (info->taken_forks && info->taken_forks != SEM_FAILED)
 		sem_close(info->taken_forks);
+	if (info->all_ate && info->all_ate != SEM_FAILED)
+		sem_close(info->all_ate);
 	sem_unlink("/print");
 	sem_unlink("/stop");
 	sem_unlink("/forks");
 	sem_unlink("/taken_forks");
+	sem_unlink("/all_ate");
 	free(info->philos);
 	free(info->pids);
 }
 
-void	wait_processes(t_info *info)
+void	*all_ate_watcher(void *arg)
 {
-	int		status;
+	t_info	*info;
 	int		i;
 
-	waitpid(-1, &status, 0);
-	if (WIFEXITED(status) && WEXITSTATUS(status) == 1)
-		kill_childs(info, info->num);
+	info = (t_info *)arg;
 	i = 0;
-	while (i < info->num -1 )
+	while (i < info->num)
 	{
-		waitpid(-1, NULL, 0); // it waits for remaianed child
+		sem_wait(info->all_ate);
 		i++;
 	}
+	kill_childs(info, info->num);
+	return (NULL);
+}
+
+void	wait_processes(t_info *info)
+{
+	int			status;
+	pthread_t	watcher;
+	int			i;
+	int			j;
+
+	if(info->flag_must_eat)
+		pthread_create(&watcher, NULL, all_ate_watcher, info);
+	i = 0;
+	while (i < info->num)
+	{
+		waitpid(-1, &status, 0);
+		if (WIFEXITED(status) && WEXITSTATUS(status) == 1)
+		{
+			kill_childs(info, info->num);
+			if(info->flag_must_eat)
+			{
+				j = 0;
+				while (j < info->num)
+				{
+					sem_post(info->all_ate);
+					j++;
+				}
+			}
+			break;
+		}
+		i++;
+	}
+	while (waitpid(-1, NULL, 0) > 0); // it waits for remaianed child
+	if(info->flag_must_eat)
+		pthread_join(watcher, NULL);
 }
 
 int	main(int argc, char **argv)

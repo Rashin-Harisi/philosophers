@@ -21,10 +21,13 @@ int	clean_func(t_info *info)
 		sem_close(info->stop_flag);
 	if (info->taken_forks && info->taken_forks != SEM_FAILED)
 		sem_close(info->taken_forks);
+	if (info->all_ate && info->all_ate != SEM_FAILED)
+		sem_close(info->all_ate);
 	sem_unlink("/print");
 	sem_unlink("/stop");
 	sem_unlink("/forks");
 	sem_unlink("/taken_forks");
+	sem_unlink("/all_ate");
 	free(info->philos);
 	free(info->pids);
 	return (0);
@@ -62,10 +65,13 @@ int	first_initial(char **argv, t_info *info)
 	info->stop_flag = sem_open("/stop", O_CREAT, 0644, 1);
 	sem_unlink("/forks");
 	info->forks = sem_open("/forks", O_CREAT, 0644, info->num);
+	sem_unlink("/all_ate");
+	info->all_ate = sem_open("/all_ate", O_CREAT, 0644, 0);
 	if (info->forks == SEM_FAILED
 		|| info->print == SEM_FAILED
 		|| info->stop_flag == SEM_FAILED
-		|| info->taken_forks == SEM_FAILED)
+		|| info->taken_forks == SEM_FAILED
+		|| info->all_ate == SEM_FAILED)
 		return (clean_func(info));
 	return (1);
 }
