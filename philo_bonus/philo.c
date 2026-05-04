@@ -17,15 +17,8 @@ void	print(t_philo *philo, char *text)
 
 	sem_wait(philo->info->print);
 	now = get_times_in_ms();
-	if (ft_strcmp(text, "died") == 0)
-	{
-		printf ("%ld %d died\n", (now - philo->info->start_time),
-			philo->id);
-		exit(1);
-	}
-	else
-		printf ("%ld %d %s\n", (now - philo->info->start_time),
-			philo->id, text);
+	printf ("%ld %d %s\n", (now - philo->info->start_time),
+		philo->id, text);
 	sem_post(philo->info->print);
 }
 
@@ -52,6 +45,7 @@ long	get_last_meal_time(t_philo *philo)
 void	*monitor(void *arg)
 {
 	t_philo	*philo;
+	long	now;
 
 	philo = (t_philo *)arg;
 	while (1)
@@ -60,7 +54,11 @@ void	*monitor(void *arg)
 		if (get_times_in_ms() - get_last_meal_time(philo)
 			> philo->info->time_to_die)
 		{
-			print(philo , "died");
+			now = get_times_in_ms();
+			sem_wait(philo->info->print);
+			printf ("%ld %d died\n", (now - philo->info->start_time),
+				philo->id);
+			sem_post(philo->info->print);
 			exit(1);
 		}
 		if (philo->info->flag_must_eat && get_nums_meal(philo) >= philo->info->times_must_eat)
