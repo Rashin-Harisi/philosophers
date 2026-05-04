@@ -20,7 +20,7 @@ void	print(t_philo *philo, char *text)
 	if (ft_strcmp(text, "died") == 0)
 	{
 		printf ("%ld %d died\n", (now - philo->info->start_time),
-			philo->id, text);
+			philo->id);
 		exit(1);
 	}
 	else
