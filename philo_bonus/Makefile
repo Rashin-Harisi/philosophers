@@ -20,7 +20,7 @@ CFLAGS			:= -Wall -Wextra -Werror -g
 all	: $(NAME)
 $(NAME) : $(MANDATORY_OBJ) $(COMMON_OBJ)
 	$(CC) $(CFLAGS) $(MANDATORY_OBJ) $(COMMON_OBJ) -o $(NAME)
-	@echo "Mandatory part is build."
+	@echo "Bonus part is build."
 
 %.o: %.c $(HEADER)
 	$(CC) $(CFLAGS) -c $< -o $@

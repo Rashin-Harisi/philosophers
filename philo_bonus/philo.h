@@ -70,5 +70,14 @@ void	print(t_philo *philo, char *text);
 int		get_nums_meal(t_philo *philo);
 long	get_last_meal_time(t_philo *philo);
 long	get_times_in_ms(void);
+void	cleanup(t_info *info);
+int		clean_func(t_info *info);
+int		init_philo(t_info *info);
+void	wait_processes(t_info *info);
+void	eat(t_philo *philo);
+void	sleep_philo(t_philo *philo);
+void	think(t_philo *philo);
+void	routine(t_philo *philo);
+int	validation_args(int argc, char **argv);
 
 #endif

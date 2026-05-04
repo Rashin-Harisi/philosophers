@@ -16,12 +16,9 @@ void	print(t_philo *philo, char *text)
 	long	now;
 
 	sem_wait(philo->info->print);
-	if (!get_stop_flag(philo->info) || ft_strcmp(text, "died") == 0)
-	{
-		now = get_times_in_ms();
-		printf ("%ld %d %s\n", (now - philo->info->start_time),
+	now = get_times_in_ms();
+	printf ("%ld %d %s\n", (now - philo->info->start_time),
 			philo->id, text);
-	}
 	sem_post(philo->info->print);
 }
 
@@ -66,6 +63,63 @@ void	*monitor(void *arg)
 	return (NULL);
 }
 
+void	cleanup(t_info *info)
+{
+	int		i;
+	char	*name;
+
+	i = 0;
+	while (i < info->num)
+	{
+		if (info->philos[i].last_meal && info->philos[i].last_meal != SEM_FAILED)
+			sem_close(info->philos[i].last_meal);
+		if (info->philos[i].meals && info->philos[i].meals != SEM_FAILED)
+			sem_close(info->philos[i].meals);
+		name = create_name(&info->philos[i], "/last_meal");
+		if (name)
+		{
+			sem_unlink(name);
+			free(name);
+		}
+		name = create_name(&info->philos[i], "/meals");
+		if (name)
+		{
+			sem_unlink(name);
+			free(name);
+		}
+		i++;
+	}
+	if (info->forks && info->forks != SEM_FAILED)
+		sem_close(info->forks);
+	if (info->print && info->print != SEM_FAILED)
+		sem_close(info->print);
+	if (info->stop_flag && info->stop_flag != SEM_FAILED)
+		sem_close(info->stop_flag);
+	if (info->taken_forks && info->taken_forks != SEM_FAILED)
+		sem_close(info->taken_forks);
+	sem_unlink("/print");
+	sem_unlink("/stop");
+	sem_unlink("/forks");
+	sem_unlink("/taken_forks");
+	free(info->philos);
+	free(info->pids);
+}
+
+void	wait_processes(t_info *info)
+{
+	int		status;
+	int		i;
+
+	waitpid(-1, &status, 0);
+	if (WIFEXITED(status) && WEXITSTATUS(status) == 1)
+		kill_childs(info, info->num);
+	i = 0;
+	while (i < info->num -1 )
+	{
+		waitpid(-1, NULL, 0); // it waits for remaianed child
+		i++;
+	}
+}
 
 int	main(int argc, char **argv)
 {
@@ -76,11 +130,10 @@ int	main(int argc, char **argv)
 	if (!first_initial(argv, &info))
 		return (1);
 	if (!init_philo(&info))
-		return (cleanup(&info));
+		return (cleanup(&info), 1);
 	if (!create_processes(&info))
-		return (cleanup(&info));
-	
-	free(info.philos);
-	free(info.forks);
+		return (cleanup(&info), 1);
+	wait_processes(&info);
+	cleanup(&info);
 	return (0);
 }

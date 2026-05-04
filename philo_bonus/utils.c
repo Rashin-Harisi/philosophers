@@ -73,6 +73,8 @@ int	is_digit(char *str)
 	int	i;
 
 	i = 0;
+	if (!str[0])
+		return (0);
 	while (str[i] != '\0')
 	{
 		if (str[i] >= '0' && str[i] <= '9')
@@ -92,7 +94,7 @@ char	*create_name(t_philo *philo, char *main)
 	num = ft_itoa(philo->id);
 	if (!num)
 		return (NULL);
-	tmp = ft_strjoin(main, '-');
+	tmp = ft_strjoin(main, "-");
 	if (!tmp)
 	{
 		free(num);

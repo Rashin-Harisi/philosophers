@@ -24,6 +24,7 @@ int	clean_func(t_info *info)
 	sem_unlink("/print");
 	sem_unlink("/stop");
 	sem_unlink("/forks");
+	sem_unlink("/taken_forks");
 	free(info->philos);
 	free(info->pids);
 	return (0);
@@ -31,16 +32,14 @@ int	clean_func(t_info *info)
 
 int	first_initial(char **argv, t_info *info)
 {
-	info->philos = NULL;
-	info->pids = NULL;
-	info->forks = NULL;
-	info->print = NULL;
-	info->stop_flag = NULL;
+	memset(info, 0, sizeof(t_info));
 	info->num = ft_atoi(argv[1]);
 	info->philos = malloc((info->num) * sizeof(t_philo));
 	info->pids = malloc((info->num) * sizeof(pid_t));
 	if (!info->pids || !info->philos)
 		return (clean_func(info));
+	memset(info->philos , 0, sizeof(t_philo )* info->num);
+	memset(info->pids, 0, sizeof(pid_t) * info->num);
 	info->time_to_die = ft_atoi(argv[2]);
 	info->time_to_eat = ft_atoi(argv[3]);
 	info->time_to_sleep = ft_atoi(argv[4]);
@@ -56,7 +55,7 @@ int	first_initial(char **argv, t_info *info)
 	}
 	info->start_time = get_times_in_ms();
 	sem_unlink("/taken_forks");
-	info->taken_forks - sem_open("/taken_forks", O_CREAT, 0644, 1);
+	info->taken_forks = sem_open("/taken_forks", O_CREAT, 0644, info->num / 2);
 	sem_unlink("/print");
 	info->print = sem_open("/print", O_CREAT, 0644, 1);
 	sem_unlink("/stop");
