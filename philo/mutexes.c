@@ -19,23 +19,10 @@ int	init_mutexes(t_info *info)
 	while (i < info->num)
 	{
 		if (pthread_mutex_init(&info->forks[i], NULL) != 0)
+		{
+			destroy_mutexes_forks(info, i);
 			return (0);
-		i++;
-	}
-	return (1);
-}
-
-int	destroy_mutexes(t_info *info)
-{
-	int	i;
-
-	i = 0;
-	while (i < info->num)
-	{
-		if (pthread_mutex_destroy(&info->forks[i]) != 0
-			|| pthread_mutex_destroy(&info->philos[i].last_time) != 0
-			|| pthread_mutex_destroy(&info->philos[i].meals) != 0)
-			return (0);
+		}
 		i++;
 	}
 	return (1);

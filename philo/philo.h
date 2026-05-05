@@ -61,7 +61,7 @@ int		join_threads(t_info *info);
 void	*routine(void *arg);
 int		init_mutexes(t_info *info);
 int		init_philo(t_info *info);
-int		destroy_mutexes(t_info *info);
+void	destroy_mutexes_end(t_info *info);
 int		cleanup(t_info *info);
 long	get_times_in_ms(void);
 void	print(t_philo *philo, char *text);
@@ -74,5 +74,8 @@ void	think(t_philo *philo);
 int		validation_args(int argc, char **argv);
 void	set_stop(t_info *info);
 int		clean_func(t_info *info);
+void	cleanup_mutexes_in_philo(t_info *info, int index);
+void	destroy_mutexes_forks(t_info *info, int index);
+
 
 #endif

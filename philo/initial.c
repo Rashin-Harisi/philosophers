@@ -13,13 +13,16 @@
 
 int	clean_func(t_info *info)
 {
-	free(info->philos);
-	free(info->forks);
+	if (info->philos)
+		free(info->philos);
+	if (info->forks)
+		free(info->forks);
 	return (0);
 }
 
 int	first_initial(char **argv, t_info *info)
 {
+	memset(info, 0, sizeof(t_info));
 	info->num = ft_atoi(argv[1]);
 	info->philos = malloc((info->num) * sizeof(t_philo));
 	info->forks = malloc((info->num) * sizeof(pthread_mutex_t));
@@ -40,58 +43,14 @@ int	first_initial(char **argv, t_info *info)
 	}
 	info->start_time = get_times_in_ms();
 	info->stop = 0;
-	pthread_mutex_init(&info->stop_flag, NULL);
-	pthread_mutex_init(&info->print, NULL);
-	return (1);
-}
-
-int	init_philo(t_info *info)
-{
-	int	i;
-
-	i = 0;
-	while (i < info->num)
+	if (pthread_mutex_init(&info->stop_flag, NULL) != 0)
+		return (clean_func(info));
+	if (pthread_mutex_init(&info->print, NULL) != 0)
 	{
-		info->philos[i].id = i + 1;
-		info->philos[i].left_fork = &info->forks[i];
-		info->philos[i].right_fork = &info->forks[(i + 1) % info->num];
-		info->philos[i].last_meal_time = info->start_time;
-		info->philos[i].num_meals = 0;
-		info->philos[i].info = info;
-		if (pthread_mutex_init(&info->philos[i].meals, NULL) != 0)
-			return (0);
-		if (pthread_mutex_init(&info->philos[i].last_time, NULL) != 0)
-			return (0);
-		i++;
+		pthread_mutex_destroy(&info->stop_flag);
+		return (clean_func(info));
 	}
 	return (1);
 }
 
-int	create_threads(t_info *info)
-{
-	int	index;
 
-	index = 0;
-	while (index < info->num)
-	{
-		if (pthread_create(&info->philos[index].thread, NULL,
-				&routine, &info->philos[index]) != 0)
-			return (0);
-		index++;
-	}
-	return (1);
-}
-
-int	join_threads(t_info *info)
-{
-	int	i;
-
-	i = 0;
-	while (i < info->num)
-	{
-		if (pthread_join(info->philos[i].thread, NULL) != 0)
-			return (0);
-		i++;
-	}
-	return (1);
-}

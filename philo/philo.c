@@ -80,20 +80,27 @@ int	main(int argc, char **argv)
 	if (!first_initial(argv, &info))
 		return (1);
 	if (!init_mutexes(&info))
+	{
+		pthread_mutex_destroy(&info.print);
+		pthread_mutex_destroy(&info.stop_flag);
 		return (cleanup(&info));
+	}
 	if (!init_philo(&info))
+	{
+		destroy_mutexes_forks(&info, info.num);
+		pthread_mutex_destroy(&info.print);
+		pthread_mutex_destroy(&info.stop_flag);
 		return (cleanup(&info));
+	}
 	if (!create_threads(&info))
+	{
+		destroy_mutexes_end(&info);
 		return (cleanup(&info));
+	}
 	monitor(&info);
 	if (!join_threads(&info))
 		return (cleanup(&info));
-	if (!destroy_mutexes(&info))
-		return (cleanup(&info));
-	if (pthread_mutex_destroy(&info.print) != 0)
-		return (cleanup(&info));
-	if (pthread_mutex_destroy(&info.stop_flag) != 0)
-		return (cleanup(&info));
+	destroy_mutexes_end(&info);
 	free(info.philos);
 	free(info.forks);
 	return (0);
