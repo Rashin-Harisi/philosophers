@@ -76,6 +76,7 @@ void	set_stop(t_info *info);
 int		clean_func(t_info *info);
 void	cleanup_mutexes_in_philo(t_info *info, int index);
 void	destroy_mutexes_forks(t_info *info, int index);
+void	cleanup_threads(t_info *info, int index);
 
 
 #endif

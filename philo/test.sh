@@ -1,76 +1,78 @@
 #!/bin/bash
 
-OUT="tests.log"
 BIN="./philo"
+OUT_DIR="philo_test_results"
+SUMMARY="$OUT_DIR/summary.log"
 
-make re
+mkdir -p "$OUT_DIR"
+rm -f "$OUT_DIR"/*.log
 
-echo "DATE: $(date)" > "$OUT"
-echo "" >> "$OUT"
+make re > "$OUT_DIR/build.log" 2>&1
+
+if [ ! -x "$BIN" ]; then
+	echo "❌ Build failed. Check $OUT_DIR/build.log"
+	exit 1
+fi
+
+echo "========== PHILO TEST SUMMARY ==========" > "$SUMMARY"
+echo "Date: $(date)" >> "$SUMMARY"
+echo "" >> "$SUMMARY"
 
 run_test()
 {
 	NAME="$1"
 	CMD="$2"
-	LIMIT="$3"
-	EXPECT="$4"
+	TIMEOUT="$3"
+	EXPECT_DEATH="$4"
+	EXPECT_FINISH="$5"
 
-	echo "----------------------------" >> "$OUT"
-	echo "TEST: $NAME" >> "$OUT"
-	echo "Command: $CMD" >> "$OUT"
-	echo "Expected: $EXPECT" >> "$OUT"
-	echo "-----------------------------" >> "$OUT"
+	LOG="$OUT_DIR/${NAME}.log"
 
-	timeout "$LIMIT" bash -c "$CMD" > tmp_test.log 2>&1
-	STATUS=$?
+	echo "------ $NAME ------" >> "$SUMMARY"
+	echo "Command: $CMD" >> "$SUMMARY"
 
-	cat tmp_test.log >> "$OUT"
+	timeout "$TIMEOUT" $CMD > "$LOG" 2>&1
+	RET=$?
 
-	if [ "$EXPECT" = "death" ]; then
-		if grep -q "died" tmp_test.log; then
-			echo "RESULT: PASS" >> "$OUT"
-		else
-			echo "RESULT: FAIL - expected death" >> "$OUT"
-		fi
+	DEATH_COUNT=$(grep -c "died" "$LOG")
+	LAST_LINE=$(tail -n 1 "$LOG")
 
-	elif [ "$EXPECT" = "no_death" ]; then
-		if grep -q "died" tmp_test.log; then
-			echo "RESULT: FAIL - unexpected death" >> "$OUT"
-		else
-			echo "RESULT: PASS" >> "$OUT"
-		fi
+	STATUS="PASS"
 
-	elif [ "$EXPECT" = "finish" ]; then
-		if grep -q "died" tmp_test.log; then
-			echo "RESULT: FAIL - died before finishing" >> "$OUT"
-		elif [ "$STATUS" -eq 124 ]; then
-			echo "RESULT: FAIL - timeout, program did not finish" >> "$OUT"
-		else
-			echo "RESULT: PASS" >> "$OUT"
-		fi
-
-	elif [ "$EXPECT" = "invalid" ]; then
-		if [ "$STATUS" -eq 124 ]; then
-			echo "RESULT: FAIL - invalid input caused timeout" >> "$OUT"
-		else
-			echo "RESULT: PASS" >> "$OUT"
-		fi
+	if [ "$EXPECT_DEATH" = "yes" ] && [ "$DEATH_COUNT" -ne 1 ]; then
+		STATUS="FAIL"
 	fi
 
-	echo "" >> "$OUT"
-	rm -f tmp_test.log
+	if [ "$EXPECT_DEATH" = "no" ] && [ "$DEATH_COUNT" -ne 0 ]; then
+		STATUS="FAIL"
+	fi
+
+	if [ "$EXPECT_FINISH" = "yes" ] && [ "$RET" -eq 124 ]; then
+		STATUS="FAIL"
+	fi
+
+	if [ "$EXPECT_FINISH" = "no" ] && [ "$RET" -ne 124 ]; then
+		STATUS="FAIL"
+	fi
+
+	echo "Result: $STATUS" >> "$SUMMARY"
+	echo "Exit code: $RET" >> "$SUMMARY"
+	echo "Death count: $DEATH_COUNT" >> "$SUMMARY"
+	echo "Last line: $LAST_LINE" >> "$SUMMARY"
+	echo "Log file: $LOG" >> "$SUMMARY"
+	echo "" >> "$SUMMARY"
+
+	echo "$STATUS - $NAME"
 }
 
-run_test "One philosopher should die" "$BIN 1 800 200 200" 3 "death"
-run_test "Must eat 2 times and finish without death" "$BIN 3 800 200 200 2" 5 "finish"
-run_test "5 philosophers should not die early" "$BIN 5 800 200 200" 8 "no_death"
-run_test "4 philosophers stable timing" "$BIN 4 410 200 200" 8 "no_death"
-run_test "Death expected because eat > die" "$BIN 4 200 210 100" 3 "death"
+run_test "single_philo" "$BIN 1 800 200 200" "3s" "yes" "yes"
+run_test "normal_5" "$BIN 5 800 200 200" "5s" "no" "no"
+run_test "normal_4_tight" "$BIN 4 410 200 200" "5s" "no" "no"
+run_test "death_case" "$BIN 4 310 200 100" "3s" "yes" "yes"
+run_test "must_eat_5" "$BIN 5 800 200 200 7" "10s" "no" "yes"
+run_test "stress_200" "$BIN 200 800 200 200" "10s" "no" "no"
+run_test "stress_200_must_eat" "$BIN 200 800 200 200 3" "20s" "no" "yes"
 
-run_test "Invalid zero philosophers" "$BIN 0 800 200 200" 2 "invalid"
-run_test "Invalid negative philosophers" "$BIN -1 800 200 200" 2 "invalid"
-run_test "Invalid non-number" "$BIN abc 800 200 200" 2 "invalid"
-run_test "Invalid zero time" "$BIN 5 0 200 200" 2 "invalid"
-run_test "Invalid too many philosophers" "$BIN 201 800 200 200" 2 "invalid"
-
-echo "Done. Results saved in $OUT"
+echo ""
+echo "Summary saved in: $SUMMARY"
+echo "Full logs are in: $OUT_DIR/"

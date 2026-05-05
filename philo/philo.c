@@ -71,6 +71,20 @@ int	cleanup(t_info *info)
 	return (1);
 }
 
+void	update_last_meal_time(t_info *info)
+{
+	int	i;
+
+	i = 0;
+	while (i < info->num)
+	{
+		pthread_mutex_lock(&info->philos[i].last_time);
+		info->philos[i].last_meal_time = info->start_time;
+		pthread_mutex_unlock(&info->philos[i].last_time);
+		i++;
+	}
+}
+
 int	main(int argc, char **argv)
 {
 	t_info	info;
@@ -92,6 +106,10 @@ int	main(int argc, char **argv)
 		pthread_mutex_destroy(&info.stop_flag);
 		return (cleanup(&info));
 	}
+	// for high number of philos, the start time would be too late for the first init
+	// so we need too override the time for them to prevent starvation
+	info.start_time =  get_times_in_ms();
+	update_last_meal_time(&info);
 	if (!create_threads(&info))
 	{
 		destroy_mutexes_end(&info);

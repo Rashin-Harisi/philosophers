@@ -27,7 +27,7 @@ void	print(t_philo *philo, char *text)
 
 void	eat(t_philo *philo)
 {
-	if (philo->id == philo->info->num)
+	if (philo->id % 2 == 0)
 	{
 		pthread_mutex_lock(philo->right_fork);
 		print(philo, "has taken a fork");
@@ -75,7 +75,7 @@ void	*routine(void *arg)
 	{
 		pthread_mutex_lock(philo->left_fork);
 		print(philo, "has taken a fork");
-		if (!get_stop_flag(philo->info))
+		while (!get_stop_flag(philo->info))
 			usleep(1000);
 		pthread_mutex_unlock(philo->left_fork);
 		return (NULL);

@@ -2,7 +2,10 @@ NAME 			:= philo
 HEADER			:= philo.h 
 
 COMMON_SRC		:= utils.c \
-				initials.c \
+				destroy_mutexes.c \
+				initial.c \
+				philo_initial.c \
+				threads.c \
 				mutexes.c \
 				routine.c \
 				validation.c
